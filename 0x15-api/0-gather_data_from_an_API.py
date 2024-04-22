@@ -1,28 +1,31 @@
 #!/usr/bin/python3
-"""
-a script that returns info about a customer's todo list
-"""
-import requests
-from sys import argv
+'''
+gather employee data from API
+'''
 
+import re
+import requests
+import sys
+
+REST_API = "https://jsonplaceholder.typicode.com"
 
 if __name__ == '__main__':
-        url = "https://jsonplaceholder.typicode.com"
-            employeeId = argv[1]
-          
-          employee = requests.get("{}/users/{}".format(url, employeeId)).json()
-              todos = requests.get(url + "/todos", params={"userId": employeeId}).json()
-              
-        completed_tasks = []
-        for data in todos:
-            if data.get('completed') is True:
-                 completed_tasks.append(data.get('title'))
-        employee_name = employee.get('name')
-            total_num_of_tasks = len(todos)
-                num_of_tasks_done = len(completed_tasks)
+        if len(sys.argv) > 1:
+                    if re.fullmatch(r'\d+', sys.argv[1]):
+                                    id = int(sys.argv[1])
+                                                req = requests.get('{}/users/{}'.format(REST_API, id)).json()
+                                                            task_req = requests.get('{}/todos'.format(REST_API)).json()
+                                                                        emp_name = req.get('name')
+                                                                                    tasks = list(filter(lambda x: x.get('userId') == id, task_req))
+                                                                                                completed_tasks = list(filter(lambda x: x.get('completed'), tasks))
+                                                                                                            print(
+                                                                                                                                    'Employee {} is done with tasks({}/{}):'.format(
+                                                                                                                                                            emp_name,
+                                                                                                                                                                                len(completed_tasks),
+                                                                                                                                                                                                    len(tasks)
+                                                                                                                                                                                                                    )
+                                                                                                                                                )
+                                                                                                                        if len(completed_tasks) > 0:
+                                                                                                                                            for task in completed_tasks:
+                                                                                                                                                                    print('\t {}'.format(task.get('title')))
 
-                    print("Employee {} is done with tasks({}/{}):".format(employee_name,
-                              num_of_tasks_done, total_num_of_tasks))
-
-                        for title in completed_tasks:
-                             print("\t {}".format(title))
